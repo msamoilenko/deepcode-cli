@@ -3,6 +3,8 @@ import assert from "node:assert/strict";
 import {
   PLUS_PACKAGES_URL,
   VALID_PERMISSION_SCOPES,
+  formatContextStatus,
+  formatTokenCount,
   getNonce,
   isAllowedExternalUrl,
   parsePermissionScopes,
@@ -145,4 +147,23 @@ test("getNonce returns different values on successive calls", () => {
   }
   // With 62^32 possible values, 100 calls should almost certainly be unique
   assert.ok(nonces.size > 90, `Expected mostly unique nonces, got ${nonces.size} unique out of 100`);
+});
+
+// --- token formatting ---
+
+test("formatTokenCount compacts thousands and millions", () => {
+  assert.equal(formatTokenCount(0), "0");
+  assert.equal(formatTokenCount(-1), "0");
+  assert.equal(formatTokenCount(Number.NaN), "0");
+  assert.equal(formatTokenCount(999), "999");
+  assert.equal(formatTokenCount(1_000), "1.0k");
+  assert.equal(formatTokenCount(20_770), "20.8k");
+  assert.equal(formatTokenCount(1_048_576), "1.0M");
+});
+
+test("formatContextStatus renders used tokens, window, and percentage", () => {
+  assert.equal(formatContextStatus(20_770, 1_048_576), "20.8k / 1.0M (2%)");
+  assert.equal(formatContextStatus(500_000, 1_000_000), "500.0k / 1.0M (50%)");
+  assert.equal(formatContextStatus(0, 0), "0 / 0 (0%)");
+  assert.equal(formatContextStatus(Number.NaN, 1_000_000), "0 / 1.0M (0%)");
 });
